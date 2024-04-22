@@ -19,6 +19,12 @@ struct Plane{
 
 
 int main(){
+    sem_unlink("plane_semaphore");
+    sem_t *ss = sem_open("plane_semaphore", O_CREAT | O_EXCL, 0666, 1);
+    if (ss == SEM_FAILED) {
+        perror("sem_open");
+    }
+
     int plane_id, plane_type, passengers=0;
     int total_weight=0;
     int num_cargo=0, avg_cargo_weight=0;
@@ -38,6 +44,8 @@ int main(){
     scanf("%d", &plane_type);
     printf("\n");
     fflush(stdout);
+    pid_t pid =-1;
+    
     if(plane_type == 1){
         // passenger plane
         printf("Enter Number of Occupied Seats: ");
@@ -45,15 +53,13 @@ int main(){
         scanf("%d", &passengers);
         printf("\n");
         fflush(stdout);
+        int ID = passengers;
         for(int i=0; i<passengers; i++){
             if(pipe(fd[i]) == -1){
                 printf("Error in making a pipe\n");
                 fflush(stdout);
             }
         }
-
-        pid_t pid;
-        int ID = passengers;
         for(int i=0; i<passengers; i++){
             pid = fork();
             if(pid == 0){
@@ -66,35 +72,27 @@ int main(){
             }
         }
         if(pid == 0){
-            // I can add a mutex here for every child and a parent control to make it more sequential
-            int luggage_w;
+            sem_wait(ss);
+            int luggage_w, passenger_w;
             printf("Enter Weight of Your Luggage: ");
             fflush(stdout);
             scanf("%d", &luggage_w);
             printf("\n");
-            fflush(stdout);
-            write(fd[ID][1], &luggage_w, sizeof(int));
-
-            int passenger_w;
             printf("Enter Your Body Weight: ");
             fflush(stdout);
             scanf("%d", &passenger_w);
             printf("\n");
             fflush(stdout);
+
+            write(fd[ID][1], &luggage_w, sizeof(int));
             write(fd[ID][1], &passenger_w, sizeof(int));
-
-
+            sem_post(ss);
 
         }
         else{
             for(int i=0; i<passengers; i++){
                 read(fd[i][0], &luggage_weight[i], sizeof(int));
-                total_weight+=luggage_weight[i] + passenger_weight[i];
-            }
-            for(int i=0; i<passengers; i++){
                 read(fd[i][0], &passenger_weight[i], sizeof(int));
-            }
-            for(int i=0; i<passengers; i++){
                 total_weight += luggage_weight[i] + passenger_weight[i];
             }
             for(int i=0; i<passengers; i++){
@@ -114,39 +112,47 @@ int main(){
         printf("Enter Number of Cargo Items: ");
         fflush(stdout);
         scanf("%d", &num_cargo);
+
         printf("\n");
-        fflush(stdout);
         printf("Enter Average Weight of Cargo Items: ");
         fflush(stdout);
         scanf("%d", &avg_cargo_weight);
+
         printf("\n");
         fflush(stdout);
+
         total_weight = (avg_cargo_weight * num_cargo) + (75 * 2);
     }
 
-    printf("Enter Airport Number for Departure: ");
-    fflush(stdout);
-    scanf("%d", &departure_airport);
-    printf("\n");
-    fflush(stdout);
-
-    printf("Enter Airport Number for Arrival: ");
-    fflush(stdout);
-    scanf("%d", &arrival_ariport);
-    printf("\n");
-    fflush(stdout);
 
 
-    struct Plane plane_data;
-    plane_data.arrival_ariport   = arrival_ariport;
-    plane_data.departure_airport = departure_airport;
-    plane_data.plane_id          = plane_id;
-    plane_data.total_weight      = total_weight;
-    plane_data.plane_type        = plane_type;
-    plane_data.passengers        = passengers;
+    if(pid!=0){
+        printf("Enter Airport Number for Departure: ");
+        fflush(stdout);
+        scanf("%d", &departure_airport);
+        printf("\n");
+        fflush(stdout);
+
+        printf("Enter Airport Number for Arrival: ");
+        fflush(stdout);
+        scanf("%d", &arrival_ariport);
+        printf("\n");
+        fflush(stdout);
 
 
-    //send the plane_data to message queue
+        struct Plane plane_data;
+        plane_data.arrival_ariport   = arrival_ariport;
+        plane_data.departure_airport = departure_airport;
+        plane_data.plane_id          = plane_id;
+        plane_data.total_weight      = total_weight;
+        plane_data.plane_type        = plane_type;
+        plane_data.passengers        = passengers;
+
+
+        //send the plane_data to message queue
+    }
+
+
 
 
     return 0;
