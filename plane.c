@@ -152,7 +152,7 @@ int main(){
         //send the plane_data to message queue
     }
 
-
+    sem_destroy(ss);
 
 
     return 0;
