@@ -33,6 +33,8 @@ int main(){
     int departure_airport, arrival_ariport;
 
     int fd[20][2]; //pipe
+
+    
     printf("Enter Plane ID: ");
     fflush(stdout);
     scanf("%d", &plane_id);

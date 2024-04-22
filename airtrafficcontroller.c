@@ -12,5 +12,14 @@
 
 
 int main(){
+    int airports;
+    printf("Enter the number of airports to be handled/managed: ");
+    fflush(stdout);
+    scanf("%d", &airports);
+    printf("\n");
+    fflush(stdout);
+
+
+
     return 0;
 }
