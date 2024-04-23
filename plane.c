@@ -139,12 +139,10 @@ int main(){
         printf("Enter Number of Cargo Items: ");
         fflush(stdout);
         scanf("%d", &num_cargo);
-
         printf("\n");
         printf("Enter Average Weight of Cargo Items: ");
         fflush(stdout);
         scanf("%d", &avg_cargo_weight);
-
         printf("\n");
         fflush(stdout);
 
@@ -158,8 +156,6 @@ int main(){
         fflush(stdout);
         scanf("%d", &departure_airport);
         printf("\n");
-        fflush(stdout);
-
         printf("Enter Airport Number for Arrival: ");
         fflush(stdout);
         scanf("%d", &arrival_ariport);
@@ -208,7 +204,6 @@ int main(){
             exit(EXIT_FAILURE);
         }
         if(conformation){
-            int runway;
             printf("Plane %d has successfully traveled from Airport %d to Airport %d!\n",
                              plane_id, departure_airport, arrival_ariport);
             fflush(stdout);
@@ -217,7 +212,6 @@ int main(){
             printf("Plain can not travel as cleanup happended already\n");
             fflush(stdout);
         }
-
     }
 
     return 0;
