@@ -20,7 +20,7 @@ int message_sender:
 3 = airport
 4 = clean up 
 */
-const int message_sender_id = 4;
+int message_sender_id = 4;
 
 
 struct Plane{
@@ -37,7 +37,7 @@ int main(){
         scanf("%c", &cc);
         printf("\n");
         fflush(stdout);
-        if(cc != 'N' && cc != "Y"){
+        if(cc != 'N' && cc != 'Y'){
             printf("INVALID CHAR ENTERED\n");
         }
     }

@@ -192,11 +192,11 @@ int main(){
             perror("msgsnd");
             exit(EXIT_FAILURE);
         }
+        sem_post(semATC);
         if (msgsnd(msgid, &plane_data, sizeof(struct Plane), 0) == -1) {
             perror("msgsnd");
             exit(EXIT_FAILURE);
         }
-
         sem_wait(ss);
         int conformation;
         if (msgrcv(msgid, &conformation, sizeof(int), 0, 0) == -1) {

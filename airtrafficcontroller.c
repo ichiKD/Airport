@@ -20,7 +20,7 @@ int message_sender:
 3 = airport
 4 = clean up 
 */
-const int message_sender_id = 2;
+int message_sender_id = 2;
 
 
 struct Plane{
@@ -68,6 +68,7 @@ int main(){
             perror("msgrcv");
             exit(EXIT_FAILURE);
         }
+        sem_wait(semATC);
         if(sender == 1){
             struct Plane r;
             if (msgrcv(msgid, &r, sizeof(struct Plane), 0, 0) == -1) {
@@ -100,14 +101,17 @@ int main(){
             else{
                 sem_post(departure_semaphore);
                 int FOR_DEPARTURE =1;
-                if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+                terminated = 0;
+                if (msgsnd(msgid, &terminated, sizeof(int), 0) == -1) {
                     perror("msgsnd");
                     exit(EXIT_FAILURE);
                 }
+                sem_post(departure_semaphore);
                 if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
                     perror("msgsnd");
                     exit(EXIT_FAILURE);
                 }
+                sem_post(departure_semaphore);
                 if (msgsnd(msgid, &r, sizeof(struct Plane), 0) == -1) {
                     perror("msgsnd");
                     exit(EXIT_FAILURE);
@@ -120,21 +124,30 @@ int main(){
                 perror("msgrcv");
                 exit(EXIT_FAILURE);
             }
+            sem_wait(semATC);
+            struct Plane r;
+            if (msgrcv(msgid, &r, sizeof(struct Plane), 0, 0) == -1) {
+                perror("msgrcv");
+                exit(EXIT_FAILURE);
+            }
+            sem_wait(semATC);
             if(departure){
-                struct Plane r;
-                if (msgrcv(msgid, &r, sizeof(struct Plane), 0, 0) == -1) {
+                int CONFORMATION_boarding, CONFORMATION_takeoff;
+                if (msgrcv(msgid, &CONFORMATION_boarding, sizeof(int), 0, 0) == -1) {
                     perror("msgrcv");
                     exit(EXIT_FAILURE);
                 }
+                sem_wait(semATC);
+                if (msgrcv(msgid, &CONFORMATION_takeoff, sizeof(int), 0, 0) == -1) {
+                    perror("msgrcv");
+                    exit(EXIT_FAILURE);
+                }
+                sem_wait(semATC);
                 char arrival_semaphore_name[25];  
                 sprintf(arrival_semaphore_name, "airport_semaphore_%d", r.arrival_ariport); 
                 sem_t *arrival_semaphore = sem_open(arrival_semaphore_name, 0);
                 int FOR_DEPARTURE = 0;
                 sem_post(arrival_semaphore);
-                if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
-                    perror("msgsnd");
-                    exit(EXIT_FAILURE);
-                }
                 if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
                     perror("msgsnd");
                     exit(EXIT_FAILURE);
@@ -145,27 +158,31 @@ int main(){
                 }
             }
             else{
-                struct Plane r;
-                if (msgrcv(msgid, &r, sizeof(struct Plane), 0, 0) == -1) {
-                    perror("msgrcv");
-                    exit(EXIT_FAILURE);
-                }
                 char plane_semaphore_name[20];  
                 sprintf(plane_semaphore_name, "plane_semaphore_%d", r.plane_id); 
                 sem_t *plane_semaphore = sem_open(plane_semaphore_name, 0);
-                sem_post(plane_semaphore);
-                int conformation = 1;
+                int CONFORMATION_landing, CONFORMATION_deboarded;
+                if (msgrcv(msgid, &CONFORMATION_landing, sizeof(int), 0, 0) == -1) {
+                    perror("msgrcv");
+                    exit(EXIT_FAILURE);
+                }
+                sem_wait(semATC);
+                if (msgrcv(msgid, &CONFORMATION_deboarded, sizeof(int), 0, 0) == -1) {
+                    perror("msgrcv");
+                    exit(EXIT_FAILURE);
+                }
+                int plane_conformation = 1;
                 //NOTE: not ending sender id as it is obviour ATC is sending the conformation
                 sem_post(plane_semaphore);
-                if (msgsnd(msgid, &conformation, sizeof(int), 0) == -1) {
+                if (msgsnd(msgid, &plane_conformation, sizeof(int), 0) == -1) {
                     perror("msgsnd");
                     exit(EXIT_FAILURE);
                 }
-
-                //
                 FILE *fp;
-                char filename[] = "output.txt";
-                char text_to_append[] = "This is new data to append.\n";
+                char filename[] = "AirTrafficController.txt";
+                char text_to_append[60] ;
+                sprintf(text_to_append, "Plane %d has departed from Airport %d and will land at Airport %d.", 
+                                r.plane_id, r.departure_airport, r.arrival_ariport); 
                 fp = fopen(filename, "a");
                 if (fp == NULL) {
                     fp = fopen(filename, "w");
@@ -177,10 +194,6 @@ int main(){
                 }
                 fprintf(fp, "%s", text_to_append);
                 fclose(fp);
-
-
-
-
             }
         }
         else{

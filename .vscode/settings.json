@@ -6,6 +6,8 @@
         "stdio.h": "c",
         "stdlib.h": "c",
         "types.h": "c",
-        "cstdlib": "c"
+        "cstdlib": "c",
+        "semaphore.h": "c",
+        "errno.h": "c"
     }
 }

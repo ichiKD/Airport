@@ -20,8 +20,9 @@ int message_sender:
 3 = airport
 4 = clean up 
 */
-const int message_sender_id = 3;
-
+int message_sender_id = 3;
+sem_t *semATC;
+int msgid;
 
 int airport_number, runways;
 pthread_t *threads = NULL;
@@ -57,39 +58,144 @@ void * useRunways(void *args){
             sleep(3);
             printf("Plane %d has completed boarding/loading and taken off from Runway No. %d of Airport No. %d.\n",
                     r.plane_id, idx + 1, airport_number);
+            sem_post(semATC);
+            if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
+            if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
+            if (msgsnd(msgid, &r, sizeof(struct Plane ), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
+            int CONFORMATION_boarding = 1;
+            if (msgsnd(msgid, &CONFORMATION_boarding, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
             // SEND CONFORMATION TO ATC about boarding
             sleep(2);
-            // SEND CONFORMATION TO ATC about Takeoff
+            int CONFORMATION_takeoff= 1;
+            if (msgsnd(msgid, &CONFORMATION_takeoff, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
         }
         else if(FOR_DEPARTURE == 0){
             sleep(2);
+            sem_post(semATC);
+            if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
+            if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
+            if (msgsnd(msgid, &r, sizeof(struct Plane ), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
             // SEND CONFORMATION TO ATC about landing
+            int CONFORMATION_landing = 1;
+            if (msgsnd(msgid, &CONFORMATION_landing, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }
+            sem_post(semATC);
             sleep(3);
             printf("Plane %d has landed on Runway No. %d of Airport No. %d and has completed deboarding/unloading.\n",
                     r.plane_id, idx + 1, airport_number);
             // SEND CONFORMATION TO ATC about deboarded
+            int CONFORMATION_deboarded= 1;
+            if (msgsnd(msgid, &CONFORMATION_deboarded, sizeof(int), 0) == -1) {
+                perror("msgsnd");
+                exit(EXIT_FAILURE);
+            }  
         }
         back_up_BUSY = 0;
         pthread_exit(NULL);
-        return;
+        return (void *)NULL;
     }
-
     busy[idx] = 1;
     if(FOR_DEPARTURE == 1){
         sleep(3);
         printf("Plane %d has completed boarding/loading and taken off from Runway No. %d of Airport No. %d.\n",
                 r.plane_id, idx + 1, airport_number);
+        sem_post(semATC);
+        if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        if (msgsnd(msgid, &r, sizeof(struct Plane ), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        int CONFORMATION_boarding = 1;
+        if (msgsnd(msgid, &CONFORMATION_boarding, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
         // SEND CONFORMATION TO ATC about boarding
         sleep(2);
-        // SEND CONFORMATION TO ATC about Takeoff
+        int CONFORMATION_takeoff= 1;
+        if (msgsnd(msgid, &CONFORMATION_takeoff, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
     }
     else if(FOR_DEPARTURE == 0){
         sleep(2);
+        sem_post(semATC);
+        if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        if (msgsnd(msgid, &r, sizeof(struct Plane ), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
         // SEND CONFORMATION TO ATC about landing
+        int CONFORMATION_landing = 1;
+        if (msgsnd(msgid, &CONFORMATION_landing, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
         sleep(3);
         printf("Plane %d has landed on Runway No. %d of Airport No. %d and has completed deboarding/unloading.\n",
                 r.plane_id, idx + 1, airport_number);
         // SEND CONFORMATION TO ATC about deboarded
+        int CONFORMATION_deboarded= 1;
+        if (msgsnd(msgid, &CONFORMATION_deboarded, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }        
     }
     busy[idx] = 0;
     pthread_exit(NULL);
@@ -126,11 +232,12 @@ int main(){
         perror("ftok");
         exit(EXIT_FAILURE);
     }
-    int msgid = msgget(key, IPC_CREAT | 0666); // Get the message queue ID
+    msgid = msgget(key, IPC_CREAT | 0666); // Get the message queue ID
     if (msgid == -1) {
         perror("msgget");
         exit(EXIT_FAILURE);
     }
+    semATC = sem_open("ATC", 0);
     char semaphore_name[25];  
     sprintf(semaphore_name, "airport_semaphore_%d", airport_number); 
     sem_unlink(semaphore_name);
@@ -140,21 +247,24 @@ int main(){
     }
     sem_wait(ss);
     while(1){
-        int sender, FOR_DEPARTURE = -1;
+        int terminated, FOR_DEPARTURE = -1;
         struct Plane r;
-        if (msgsnd(msgid, &sender, sizeof(int), 0) == -1) {
-            perror("msgsnd");
+        if (msgrcv(msgid, &terminated, sizeof(int), 0, 0) == -1) {
+            perror("msgrcv");
             exit(EXIT_FAILURE);
         }
-        if(sender == 2){
-            if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
-                perror("msgsnd");
+        if(terminated == 0){
+            sem_wait(ss);
+            if (msgrcv(msgid, &FOR_DEPARTURE, sizeof(int), 0, 0) == -1) {
+                perror("msgrcv");
                 exit(EXIT_FAILURE);
             }
-            if (msgsnd(msgid, &r, sizeof(struct Plane), 0) == -1) {
-                perror("msgsnd");
+            sem_wait(ss);
+            if (msgrcv(msgid, &r, sizeof(struct Plane), 0, 0) == -1) {
+                perror("msgrcv");
                 exit(EXIT_FAILURE);
             }
+
             int use_backup_check = 1;
             for(int i=0; i<runways; i++){
                 if(r.total_weight <= loadCapacity[i]){
