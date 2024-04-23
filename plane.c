@@ -246,8 +246,6 @@ int main(){
             perror("msgsnd");
             exit(1);
         }
-        printf("Message sent successfully\n");
-        print_message(msg);
         
         
         sem_wait(ss);
@@ -259,34 +257,17 @@ int main(){
         struct Message received_msg;
         msgbuf.mtype = MESSAGE_TYPE;
         memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
-        print_message(received_msg);
 
-
-        
-        // if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
-        //     perror("msgsnd");
-        //     exit(EXIT_FAILURE);
-        // }
-        // sem_post(semATC);
-        // if (msgsnd(msgid, &plane_data, sizeof(struct Plane), 0) == -1) {
-        //     perror("msgsnd");
-        //     exit(EXIT_FAILURE);
-        // }
-        // sem_wait(ss);
-        // int conformation;
-        // if (msgrcv(msgid, &conformation, sizeof(int), 0, 0) == -1) {
-        //     perror("msgrcv");
-        //     exit(EXIT_FAILURE);
-        // }
-        // if(conformation){
-        //     printf("Plane %d has successfully traveled from Airport %d to Airport %d!\n",
-        //                      plane_id, departure_airport, arrival_airport);
-        //     fflush(stdout);
-        // }
-        // else{
-        //     printf("Plain can not travel as cleanup happended already\n");
-        //     fflush(stdout);
-        // }
+        int conformation = received_msg.CONFORMATION_plane;
+        if(conformation)  {
+            printf("Plane %d has successfully traveled from Airport %d to Airport %d!\n",
+                             plane_id, departure_airport, arrival_airport);
+            fflush(stdout);
+        }
+        else{
+            printf("Plain can not travel as cleanup happended already\n");
+            fflush(stdout);
+        }
     }
 
     return 0;

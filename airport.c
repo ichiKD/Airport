@@ -152,7 +152,6 @@ void * useRunways(void *args){
             perror("msgsnd");
             exit(1);
         }
-        printf("Bording Message sent successfully\n");
 
         sleep(2);
         msg = takeoff(r);
@@ -163,7 +162,6 @@ void * useRunways(void *args){
             perror("msgsnd");
             exit(1);
         }
-        printf("Takeoff Message sent successfully\n");
     }
     else if(FOR_DEPARTURE == 0){
         sleep(2);
@@ -175,7 +173,6 @@ void * useRunways(void *args){
             perror("msgsnd");
             exit(1);
         }
-        printf("Landing Message sent successfully\n");
 
         sleep(3);
         printf("Plane %d has landed on Runway No. %d of Airport No. %d and has completed deboarding/unloading.\n",
@@ -189,7 +186,6 @@ void * useRunways(void *args){
             perror("msgsnd");
             exit(1);
         }
-        printf("Debording Message sent successfully\n");
 
     }
     if(idx == runways){
@@ -258,7 +254,6 @@ int main(){
         struct Message received_msg;
         msgbuf.mtype = MESSAGE_TYPE;
         memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
-        print_message(received_msg);
         if(received_msg.sender == 2)
         {
             if(received_msg.TERMINATION == 1){

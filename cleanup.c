@@ -100,8 +100,7 @@ int main(){
         perror("msgget");
         exit(EXIT_FAILURE);
     }
-    sem_unlink("ATC");
-    sem_t *semATC = sem_open("ATC", O_CREAT | O_EXCL, 0666, 0);
+    sem_t *semATC = sem_open("ATC", 0);
     if (semATC == SEM_FAILED) {
         perror("sem_open");
         exit(EXIT_FAILURE);
@@ -114,7 +113,6 @@ int main(){
         perror("msgsnd");
         exit(1);
     }
-    printf("Message sent successfully\n");
 
     return 0;
 }
