@@ -169,15 +169,44 @@ int main(){
         }
         else if(received_msg.sender == 3)
         {
-            if(received_msg.DEPARTURE_case == 1){
-                ;
+            if(received_msg.FOR_DEPARTURE == 1){
+                if(received_msg.DEPARTURE_case == 1){
+                    ;
+                }
+                else if(received_msg.DEPARTURE_case == 2){
+                    char arrival_semaphore_name[30];  
+                    sprintf(arrival_semaphore_name, "airport_semaphore_%d", received_msg.r.arrival_airport); 
+                    sem_t *arrival_semaphore = sem_open(arrival_semaphore_name, 0);
+                    struct Message msg = arrival(received_msg.r);
+                    msgbuf.mtype = MESSAGE_TYPE;
+                    memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
+                    sem_post(arrival_semaphore);
+                    if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
+                        perror("msgsnd");
+                        exit(1);
+                    }
+                    printf("Message sent successfully to airport\n");
+                    print_message(msg);
+                }
+                else{
+                    printf("404_2\n");
+                }
             }
-            else if(received_msg.DEPARTURE_case == 2){
-
+            else if(received_msg.FOR_DEPARTURE == 0){
+                if(received_msg.ARRIVAL_case == 1){
+                    ;
+                }
+                else if (received_msg.ARRIVAL_case == 2){
+                    ;
+                }
+                else{
+                    printf("404_3\n");
+                }
             }
             else{
-                printf("404_2\n");
+                printf("404_4\n");
             }
+
         }
         else if(received_msg.sender == 4)
         {
