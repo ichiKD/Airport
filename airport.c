@@ -32,7 +32,7 @@ int back_up_BUSY   = 0;
 
 
 struct Plane{
-    int arrival_ariport, departure_airport;
+    int arrival_airport, departure_airport;
     int plane_id, total_weight;
     int plane_type, passengers; 
 };
@@ -93,6 +93,28 @@ struct Message takeoff(struct Plane r){
     currentMessage.CONFORMATION_deboarded = 1;
     currentMessage.r = r;
     return currentMessage;
+}
+
+
+void print_message(struct Message msg) {
+    printf("Message Details:\n");
+    printf("Sender: %d\n", msg.sender);
+    printf("Confirmation Plane: %d\n", msg.CONFORMATION_plane);
+    printf("Termination: %d\n", msg.TERMINATION);
+    printf("For Departure: %d\n", msg.FOR_DEPARTURE);
+    printf("Departure Case: %d\n", msg.DEPARTURE_case);
+    printf("Arrival Case: %d\n", msg.ARRIVAL_case);
+    printf("Confirmation Boarding: %d\n", msg.CONFORMATION_boarding);
+    printf("Confirmation Takeoff: %d\n", msg.CONFORMATION_takeoff);
+    printf("Confirmation Landing: %d\n", msg.CONFORMATION_landing);
+    printf("Confirmation Deboarded: %d\n", msg.CONFORMATION_deboarded);
+    printf("Plane Details:\n");
+    printf("Arrival Airport: %d\n", msg.r.arrival_airport);
+    printf("Departure Airport: %d\n", msg.r.departure_airport);
+    printf("Plane ID: %d\n", msg.r.plane_id);
+    printf("Total Weight: %d\n", msg.r.total_weight);
+    printf("Plane Type: %d\n", msg.r.plane_type);
+    printf("Passengers: %d\n", msg.r.passengers);
 }
 
 

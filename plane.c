@@ -24,7 +24,7 @@ const int message_sender_id = 1;
 
 
 struct Plane{
-    int arrival_ariport, departure_airport;
+    int arrival_airport, departure_airport;
     int plane_id, total_weight;
     int plane_type, passengers; 
 };
@@ -51,7 +51,26 @@ struct Message message_to_ATC(){
 
 
 
-
+void print_message(struct Message msg) {
+    printf("Message Details:\n");
+    printf("Sender: %d\n", msg.sender);
+    printf("Confirmation Plane: %d\n", msg.CONFORMATION_plane);
+    printf("Termination: %d\n", msg.TERMINATION);
+    printf("For Departure: %d\n", msg.FOR_DEPARTURE);
+    printf("Departure Case: %d\n", msg.DEPARTURE_case);
+    printf("Arrival Case: %d\n", msg.ARRIVAL_case);
+    printf("Confirmation Boarding: %d\n", msg.CONFORMATION_boarding);
+    printf("Confirmation Takeoff: %d\n", msg.CONFORMATION_takeoff);
+    printf("Confirmation Landing: %d\n", msg.CONFORMATION_landing);
+    printf("Confirmation Deboarded: %d\n", msg.CONFORMATION_deboarded);
+    printf("Plane Details:\n");
+    printf("Arrival Airport: %d\n", msg.r.arrival_airport);
+    printf("Departure Airport: %d\n", msg.r.departure_airport);
+    printf("Plane ID: %d\n", msg.r.plane_id);
+    printf("Total Weight: %d\n", msg.r.total_weight);
+    printf("Plane Type: %d\n", msg.r.plane_type);
+    printf("Passengers: %d\n", msg.r.passengers);
+}
 
 
 
@@ -65,7 +84,7 @@ int main(){
     int num_cargo=0, avg_cargo_weight=0;
     int luggage_weight[20]={0};
     int passenger_weight[20]={0};
-    int departure_airport, arrival_ariport;
+    int departure_airport, arrival_airport;
 
     int fd[20][2]; //pipe
 
@@ -181,13 +200,13 @@ int main(){
         printf("\n");
         printf("Enter Airport Number for Arrival: ");
         fflush(stdout);
-        scanf("%d", &arrival_ariport);
+        scanf("%d", &arrival_airport);
         printf("\n");
         fflush(stdout);
 
 
         struct Plane plane_data;
-        plane_data.arrival_ariport   = arrival_ariport;
+        plane_data.arrival_airport   = arrival_airport;
         plane_data.departure_airport = departure_airport;
         plane_data.plane_id          = plane_id;
         plane_data.total_weight      = total_weight;
@@ -228,7 +247,7 @@ int main(){
         }
         if(conformation){
             printf("Plane %d has successfully traveled from Airport %d to Airport %d!\n",
-                             plane_id, departure_airport, arrival_ariport);
+                             plane_id, departure_airport, arrival_airport);
             fflush(stdout);
         }
         else{
