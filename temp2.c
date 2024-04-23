@@ -13,7 +13,6 @@
 #include <pthread.h>
 #include <string.h>
 
-#define MESSAGE_TYPE 1
 
 /*
 int message_sender:
@@ -212,20 +211,38 @@ void * useRunways(void *args){
     }
     busy[idx] = 1;
     if(FOR_DEPARTURE == 1){
-        sleep(1);
+        sleep(3);
         printf("Plane %d has completed boarding/loading and taken off from Runway No. %d of Airport No. %d.\n",
                 r.plane_id, idx + 1, airport_number);
-        struct Message msg = boarding(r);
         sem_post(semATC);
-        memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
-        if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
+        if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
             perror("msgsnd");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
-        printf("Bording Message sent successfully\n");
-
+        sem_post(semATC);
+        if (msgsnd(msgid, &FOR_DEPARTURE, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        if (msgsnd(msgid, &r, sizeof(struct Plane ), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        int CONFORMATION_boarding = 1;
+        if (msgsnd(msgid, &CONFORMATION_boarding, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
+        sem_post(semATC);
+        // SEND CONFORMATION TO ATC about boarding
         sleep(2);
-
+        int CONFORMATION_takeoff= 1;
+        if (msgsnd(msgid, &CONFORMATION_takeoff, sizeof(int), 0) == -1) {
+            perror("msgsnd");
+            exit(EXIT_FAILURE);
+        }
     }
     else if(FOR_DEPARTURE == 0){
         sleep(2);
@@ -306,43 +323,50 @@ int main(){
     char semaphore_name[25];  
     sprintf(semaphore_name, "airport_semaphore_%d", airport_number); 
     sem_unlink(semaphore_name);
-    sem_t *ss = sem_open(semaphore_name, O_CREAT | O_EXCL, 0666, 0);
+    sem_t *ss = sem_open(semaphore_name, O_CREAT | O_EXCL, 0666, 1);
     if (ss == SEM_FAILED) {
         perror("sem_open");
     }
-
-
-
     sem_wait(ss);
+    int terminated;
     while(1){
-
-        if (msgrcv(msgid, &msgbuf, sizeof(struct Message), MESSAGE_TYPE, 0) == -1) {
+        terminated = 0;
+        int FOR_DEPARTURE = -1;
+        int flag =0;
+        struct Plane r;
+        if (msgrcv(msgid, &terminated, sizeof(int), 0, 0) == -1) {
             perror("msgrcv");
-            exit(1);
+            exit(EXIT_FAILURE);
         }
-        struct Message received_msg;
-        memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
-        print_message(received_msg);
-        if(received_msg.sender == 2)
-        {
+        if(terminated == 0){
+            sem_wait(ss);
+            if (msgrcv(msgid, &FOR_DEPARTURE, sizeof(int), 0, 0) == -1) {
+                perror("msgrcv");
+                exit(EXIT_FAILURE);
+            }
+            sem_wait(ss);
+            if (msgrcv(msgid, &r, sizeof(struct Plane), 0, 0) == -1) {
+                perror("msgrcv");
+                exit(EXIT_FAILURE);
+            }
+
             int use_backup_check = 1;
             for(int i=0; i<runways; i++){
-                if(received_msg.r.total_weight <= loadCapacity[i]){
+                if(r.total_weight <= loadCapacity[i]){
                     use_backup_check =0;
                 }
             }
-
-            if(received_msg.FOR_DEPARTURE == 1){
+            if(FOR_DEPARTURE == 1){
                 if(use_backup_check){
                     pthread_join(threads[runways], NULL);
-                    struct ThreadArgs threadArg = {runways, 1, received_msg.r};
+                    struct ThreadArgs threadArg = {runways, 1, r};
                     pthread_create(&threads[runways], NULL, useRunways, (void *)&threadArg);
                 }
                 else{
                     int idx=-1;
                     while(idx == -1){
                         for(int i=0; i<runways; i++){
-                            if(loadCapacity[i]>= received_msg.r.total_weight || !busy[i]){
+                            if(loadCapacity[i]>= r.total_weight || !busy[i]){
                                 idx = i;
                                 break;
                             }
@@ -351,27 +375,27 @@ int main(){
                     for(int i=0; i<runways; i++){
                         if(!busy[i] ){
                             if(loadCapacity[i] < loadCapacity[idx]){
-                                if(loadCapacity[i] >= received_msg.r.total_weight){
+                                if(loadCapacity[i] >= r.total_weight){
                                     idx = i;
                                 }
                             }
                         }
                     }
-                    struct ThreadArgs threadArg = {idx, 1, received_msg.r};
+                    struct ThreadArgs threadArg = {idx, 1, r};
                     pthread_create(&threads[idx], NULL, useRunways, (void *)&threadArg);
                 }
             }
-            else if(received_msg.FOR_DEPARTURE == 0){
+            else if(FOR_DEPARTURE == 0){
                 if(use_backup_check){
                     pthread_join(threads[runways], NULL);
-                    struct ThreadArgs threadArg = {runways, 0, received_msg.r};
+                    struct ThreadArgs threadArg = {runways, 0, r};
                     pthread_create(&threads[runways], NULL, useRunways, (void *)&threadArg);
                 }
                 else{
                     int idx=-1;
                     while(idx == -1){
                         for(int i=0; i<runways; i++){
-                            if(loadCapacity[i]>= received_msg.r.total_weight || !busy[i]){
+                            if(loadCapacity[i]>= r.total_weight || !busy[i]){
                                 idx = i;
                                 break;
                             }
@@ -380,22 +404,48 @@ int main(){
                     for(int i=0; i<runways; i++){
                         if(!busy[i] ){
                             if(loadCapacity[i] < loadCapacity[idx]){
-                                if(loadCapacity[i] >= received_msg.r.total_weight){
+                                if(loadCapacity[i] >= r.total_weight){
                                     idx = i;
                                 }
                             }
                         }
                     }
-                    struct ThreadArgs threadArg = {idx, 0, received_msg.r};
+                    struct ThreadArgs threadArg = {idx, 0, r};
                     pthread_create(&threads[idx], NULL, useRunways, (void *)&threadArg);
                 }
             }
             else{
                 printf("404_2\n");
+                fflush(stdout);
             }
         }
         else{
-            printf("404\n");
+            flag =1;
+            int check =0;
+            for(int i=0; i<runways; i++){
+                check+=busy[i];
+            }
+            check +=back_up_BUSY;
+            if(check == 0){
+                break;
+            }
+            else{
+                continue;
+            }
+        }
+        if(flag){
+             flag =1;
+            int check =0;
+            for(int i=0; i<runways; i++){
+                check+=busy[i];
+            }
+            check +=back_up_BUSY;
+            if(check == 0){
+                break;
+            }
+            else{
+                continue;
+            }
         }
         sem_wait(ss);
     }

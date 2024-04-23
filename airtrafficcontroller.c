@@ -146,8 +146,41 @@ int main(){
         }
         struct Message received_msg;
         memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
-
         print_message(received_msg);
+
+
+
+        
+        if(received_msg.sender == 1)
+        {
+            char departure_semaphore_name[30];  
+            sprintf(departure_semaphore_name, "airport_semaphore_%d", received_msg.r.departure_airport); 
+            sem_t *departure_semaphore = sem_open(departure_semaphore_name, 0);
+            struct Message msg = departure(received_msg.r);
+            msgbuf.mtype = MESSAGE_TYPE;
+            memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
+            sem_post(departure_semaphore);
+            if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
+                perror("msgsnd");
+                exit(1);
+            }
+            printf("Message sent successfully to airport\n");
+            print_message(msg);
+        }
+        else if(received_msg.sender == 3)
+        {
+            
+        }
+        else if(received_msg.sender == 4)
+        {
+
+        }
+        else{
+            printf("404\n");
+        }
+
+
+
         sem_wait(semATC);
     }
     return 0;

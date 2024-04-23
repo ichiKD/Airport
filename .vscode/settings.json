@@ -9,6 +9,7 @@
         "cstdlib": "c",
         "semaphore.h": "c",
         "errno.h": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "ipc.h": "c"
     }
 }
