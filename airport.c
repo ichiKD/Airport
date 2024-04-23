@@ -246,8 +246,11 @@ int main(){
         perror("sem_open");
     }
     sem_wait(ss);
+    int terminated;
     while(1){
-        int terminated, FOR_DEPARTURE = -1;
+        terminated = 0;
+        int FOR_DEPARTURE = -1;
+        int flag =0;
         struct Plane r;
         if (msgrcv(msgid, &terminated, sizeof(int), 0, 0) == -1) {
             perror("msgrcv");
@@ -335,8 +338,32 @@ int main(){
             }
         }
         else{
-            printf("404\n");
-            fflush(stdout);
+            flag =1;
+            int check =0;
+            for(int i=0; i<runways; i++){
+                check+=busy[i];
+            }
+            check +=back_up_BUSY;
+            if(check == 0){
+                break;
+            }
+            else{
+                continue;
+            }
+        }
+        if(flag){
+             flag =1;
+            int check =0;
+            for(int i=0; i<runways; i++){
+                check+=busy[i];
+            }
+            check +=back_up_BUSY;
+            if(check == 0){
+                break;
+            }
+            else{
+                continue;
+            }
         }
         sem_wait(ss);
     }

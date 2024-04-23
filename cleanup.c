@@ -41,7 +41,27 @@ int main(){
             printf("INVALID CHAR ENTERED\n");
         }
     }
-
+    key_t key = ftok("progfile", 65);
+    if (key == -1) {
+        perror("ftok");
+        exit(EXIT_FAILURE);
+    }
+    int msgid = msgget(key, IPC_CREAT | 0666); // Get the message queue ID
+    if (msgid == -1) {
+        perror("msgget");
+        exit(EXIT_FAILURE);
+    }
+    sem_unlink("ATC");
+    sem_t *semATC = sem_open("ATC", O_CREAT | O_EXCL, 0666, 0);
+    if (semATC == SEM_FAILED) {
+        perror("sem_open");
+        exit(EXIT_FAILURE);
+    }
+    sem_post(semATC);
+    if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+        perror("msgsnd");
+        exit(EXIT_FAILURE);
+    }
 
     return 0;
 }

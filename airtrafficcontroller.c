@@ -198,7 +198,29 @@ int main(){
         }
         else{
             //sender == 4
-            terminated =1;
+            terminated = 1;
+            for(int i=1; i<airports+1; i++){
+                char airport_name[25];  
+                sprintf(airport_name, "airport_semaphore_%d", i);
+                sem_t *airport_semaphore = sem_open(airport_name, 0);
+                sem_post(airport_semaphore);
+                if (msgsnd(msgid, &terminated, sizeof(int), 0) == -1) {
+                    perror("msgsnd");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            for(int i=1; i<11; i++){
+                char plane_semaphore_name[20];  
+                sprintf(plane_semaphore_name, "plane_semaphore_%d", i); 
+                sem_t *plane_semaphore = sem_open(plane_semaphore_name, 0);
+                sem_post(plane_semaphore);
+                int conformation =0;
+                if (msgsnd(msgid, &conformation, sizeof(int), 0) == -1) {
+                    perror("msgsnd");
+                    exit(EXIT_FAILURE);
+                }
+            }
+            break;
         }
         sem_wait(semATC);
     }
