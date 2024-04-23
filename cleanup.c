@@ -12,7 +12,7 @@
 #include <sys/wait.h>
 #include <pthread.h>
 #include <string.h>
-
+#define MESSAGE_TYPE 1
 
 /*
 int message_sender:
@@ -107,10 +107,14 @@ int main(){
         exit(EXIT_FAILURE);
     }
     sem_post(semATC);
-    if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+    struct Message msg = clean();
+    msgbuf.mtype = MESSAGE_TYPE;
+    memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
+    if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
         perror("msgsnd");
-        exit(EXIT_FAILURE);
+        exit(1);
     }
+    printf("Message sent successfully\n");
 
     return 0;
 }

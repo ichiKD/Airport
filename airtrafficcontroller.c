@@ -48,12 +48,14 @@ struct Message{
 struct Message reply_to_plane(int CONFORMATION_plane){
     struct Message currentMessage;
     currentMessage.sender = 2;
+    currentMessage.TERMINATION = 0;
     currentMessage.CONFORMATION_plane = CONFORMATION_plane;
     return currentMessage;
 }
 struct Message departure(struct Plane r){
     struct Message currentMessage;
     currentMessage.sender = 2;
+    currentMessage.TERMINATION = 0;
     currentMessage.FOR_DEPARTURE = 1;
     currentMessage.r = r;
     return currentMessage;
@@ -62,6 +64,7 @@ struct Message departure(struct Plane r){
 struct Message arrival(struct Plane r){
     struct Message currentMessage;
     currentMessage.sender = 2;
+    currentMessage.TERMINATION = 0;
     currentMessage.FOR_DEPARTURE = 0;
     currentMessage.r = r;
     return currentMessage;
@@ -145,6 +148,7 @@ int main(){
             exit(1);
         }
         struct Message received_msg;
+        msgbuf.mtype = MESSAGE_TYPE;
         memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
         print_message(received_msg);
 
@@ -202,13 +206,29 @@ int main(){
                     sprintf(plane_semaphore_name, "plane_semaphore_%d", received_msg.r.plane_id);
                     sem_t *plane_semaphore = sem_open(plane_semaphore_name, 0);
                     sem_post(plane_semaphore);
+                    msgbuf.mtype = MESSAGE_TYPE;
                     memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
                     if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
                         perror("msgsnd");
                         exit(1);
                     }
                     printf("Plane conformation message sent successfully\n");
-
+                    FILE *fp;
+                    char filename[] = "AirTrafficController.txt";
+                    char text_to_append[80] ;
+                    sprintf(text_to_append, "Plane %d has departed from Airport %d and will land at Airport %d.", 
+                                    received_msg.r.plane_id, received_msg.r.departure_airport, received_msg.r.arrival_airport); 
+                    fp = fopen(filename, "a");
+                    if (fp == NULL) {
+                        fp = fopen(filename, "w");
+                        if (fp == NULL) {
+                            perror("Error creating file");
+                            return EXIT_FAILURE;
+                        }
+                        printf("File created: %s\n", filename);
+                    }
+                    fprintf(fp, "%s", text_to_append);
+                    fclose(fp);
 
                 }
                 else{
@@ -222,7 +242,21 @@ int main(){
         }
         else if(received_msg.sender == 4)
         {
-
+            printf("ENDING ATC");
+            for(int i=1; i<= airports + 10; i++){
+                char airport_name[30];  
+                sprintf(airport_name, "airport_semaphore_%d", i);
+                sem_t *airport_semaphore = sem_open(airport_name, 0);
+                sem_post(airport_semaphore);
+                struct Message msg = termination();
+                msgbuf.mtype = MESSAGE_TYPE;
+                memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
+                if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
+                    perror("msgsnd");
+                    exit(1);
+                }
+            }
+            break;
         }
         else{
             printf("404\n");

@@ -257,6 +257,7 @@ int main(){
             exit(1);
         }
         struct Message received_msg;
+        msgbuf.mtype = MESSAGE_TYPE;
         memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
         print_message(received_msg);
 

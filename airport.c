@@ -146,6 +146,7 @@ void * useRunways(void *args){
                 r.plane_id, idx + 1, airport_number);
         struct Message msg = boarding(r);
         sem_post(semATC);
+        msgbuf.mtype = MESSAGE_TYPE;
         memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
         if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
             perror("msgsnd");
@@ -156,6 +157,7 @@ void * useRunways(void *args){
         sleep(2);
         msg = takeoff(r);
         sem_post(semATC);
+        msgbuf.mtype = MESSAGE_TYPE;
         memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
         if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
             perror("msgsnd");
@@ -167,6 +169,7 @@ void * useRunways(void *args){
         sleep(2);
         struct Message msg = landing(r);
         sem_post(semATC);
+        msgbuf.mtype = MESSAGE_TYPE;
         memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
         if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
             perror("msgsnd");
@@ -180,6 +183,7 @@ void * useRunways(void *args){
         // SEND CONFORMATION TO ATC about deboarded
         msg = deboarded(r);
         sem_post(semATC);
+        msgbuf.mtype = MESSAGE_TYPE;
         memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
         if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
             perror("msgsnd");
@@ -252,10 +256,14 @@ int main(){
             exit(1);
         }
         struct Message received_msg;
+        msgbuf.mtype = MESSAGE_TYPE;
         memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
         print_message(received_msg);
         if(received_msg.sender == 2)
         {
+            if(received_msg.TERMINATION == 1){
+                break;
+            }
             int use_backup_check = 1;
             for(int i=0; i<runways; i++){
                 if(received_msg.r.total_weight <= loadCapacity[i]){
