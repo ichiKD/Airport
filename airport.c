@@ -85,7 +85,7 @@ struct Message landing(struct Plane r){
     currentMessage.r = r;
     return currentMessage;
 }
-struct Message takeoff(struct Plane r){
+struct Message deboarded(struct Plane r){
     struct Message currentMessage;
     currentMessage.sender = 3;
     currentMessage.FOR_DEPARTURE = 0;
@@ -116,6 +116,12 @@ void print_message(struct Message msg) {
     printf("Plane Type: %d\n", msg.r.plane_type);
     printf("Passengers: %d\n", msg.r.passengers);
 }
+
+struct MessageBuffer {
+    long mtype; 
+    char mtext[sizeof(struct Message)]; 
+};
+struct MessageBuffer msgbuf;
 
 
 

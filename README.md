@@ -66,4 +66,23 @@ currentMessage.TERMINATION = 1;
 
 
 
-*/
+struct MessageBuffer msgbuf;
+
+msgbuf.mtype = MESSAGE_TYPE;
+memcpy(msgbuf.mtext, &msg, sizeof(struct Message));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -69,6 +69,12 @@ void print_message(struct Message msg) {
     printf("Passengers: %d\n", msg.r.passengers);
 }
 
+struct MessageBuffer {
+    long mtype; 
+    char mtext[sizeof(struct Message)]; 
+};
+struct MessageBuffer msgbuf;
+
 
 
 int main(){

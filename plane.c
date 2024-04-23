@@ -73,6 +73,16 @@ void print_message(struct Message msg) {
 }
 
 
+struct MessageBuffer {
+    long mtype; 
+    char mtext[sizeof(struct Message)]; 
+};
+
+struct MessageBuffer msgbuf;
+
+
+
+
 
 int main(){
 
@@ -214,21 +224,23 @@ int main(){
         plane_data.passengers        = passengers;
 
 
-        //send the plane_data to message queue
+
         key_t key = ftok("progfile", 65);
         if (key == -1) {
             perror("ftok");
             exit(EXIT_FAILURE);
         }
-
-        // Get the message queue ID
-        int msgid = msgget(key, IPC_CREAT | 0666);
+        int msgid = msgget(key, IPC_CREAT | 0666); // Get the message queue ID
         if (msgid == -1) {
             perror("msgget");
             exit(EXIT_FAILURE);
         }
-
         sem_t *semATC = sem_open("ATC", 0);
+
+
+
+
+
         sem_post(semATC);
         if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
             perror("msgsnd");
