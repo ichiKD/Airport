@@ -169,7 +169,15 @@ int main(){
         }
         else if(received_msg.sender == 3)
         {
-            
+            if(received_msg.DEPARTURE_case == 1){
+                ;
+            }
+            else if(received_msg.DEPARTURE_case == 2){
+
+            }
+            else{
+                printf("404_2\n");
+            }
         }
         else if(received_msg.sender == 4)
         {

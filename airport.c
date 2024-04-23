@@ -212,7 +212,7 @@ void * useRunways(void *args){
     }
     busy[idx] = 1;
     if(FOR_DEPARTURE == 1){
-        sleep(1);
+        sleep(3);
         printf("Plane %d has completed boarding/loading and taken off from Runway No. %d of Airport No. %d.\n",
                 r.plane_id, idx + 1, airport_number);
         struct Message msg = boarding(r);
@@ -225,7 +225,14 @@ void * useRunways(void *args){
         printf("Bording Message sent successfully\n");
 
         sleep(2);
-
+        msg = takeoff(r);
+        sem_post(semATC);
+        memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
+        if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
+            perror("msgsnd");
+            exit(1);
+        }
+        printf("Takeoff Message sent successfully\n");
     }
     else if(FOR_DEPARTURE == 0){
         sleep(2);
