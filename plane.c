@@ -4,11 +4,23 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pthread.h>
+
+
+/*
+int message_sender:
+1 = plane
+2 = ATC
+3 = airport
+4 = clean up 
+*/
+const int message_sender_id = 1;
 
 
 struct Plane{
@@ -18,13 +30,13 @@ struct Plane{
 };
 
 
-int main(){
-    sem_unlink("plane_semaphore");
-    sem_t *ss = sem_open("plane_semaphore", O_CREAT | O_EXCL, 0666, 1);
-    if (ss == SEM_FAILED) {
-        perror("sem_open");
-    }
 
+
+int main(){
+
+
+
+ 
     int plane_id, plane_type, passengers=0;
     int total_weight=0;
     int num_cargo=0, avg_cargo_weight=0;
@@ -34,7 +46,7 @@ int main(){
 
     int fd[20][2]; //pipe
 
-    
+
     printf("Enter Plane ID: ");
     fflush(stdout);
     scanf("%d", &plane_id);
@@ -46,6 +58,19 @@ int main(){
     scanf("%d", &plane_type);
     printf("\n");
     fflush(stdout);
+
+
+
+    char semaphore_name[20];  
+    sprintf(semaphore_name, "plane_semaphore_%d", plane_id); 
+    sem_unlink(semaphore_name);
+    sem_t *ss = sem_open(semaphore_name, O_CREAT | O_EXCL, 0666, 1);
+    if (ss == SEM_FAILED) {
+        perror("sem_open");
+    }
+
+
+
     pid_t pid =-1;
     
     if(plane_type == 1){
@@ -152,10 +177,22 @@ int main(){
 
 
         //send the plane_data to message queue
+        key_t key = ftok("progfile", 65);
+        if (key == -1) {
+            perror("ftok");
+            exit(EXIT_FAILURE);
+        }
+
+        // Get the message queue ID
+        int msgid = msgget(key, IPC_CREAT | 0666);
+        if (msgid == -1) {
+            perror("msgget");
+            exit(EXIT_FAILURE);
+        }
+        
+
+
     }
-
-    sem_destroy(ss);
-
 
     return 0;
 }

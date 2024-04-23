@@ -4,11 +4,31 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/msg.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pthread.h>
+
+
+/*
+int message_sender:
+1 = plane
+2 = ATC
+3 = airport
+4 = clean up 
+*/
+const int message_sender_id = 3;
+
+struct Plane{
+    int arrival_ariport, departure_airport;
+    int plane_id, total_weight;
+    int plane_type, passengers; 
+};
+
+
 
 
 int main(){
@@ -33,6 +53,20 @@ int main(){
     }
 
 
+    char semaphore_name[25];  
+    sprintf(semaphore_name, "airport_semaphore_%d", airport_number); 
+    sem_unlink(semaphore_name);
+    sem_t *ss = sem_open(semaphore_name, O_CREAT | O_EXCL, 0666, 1);
+    if (ss == SEM_FAILED) {
+        perror("sem_open");
+    }
+
+
+
+
+
+
     free(loadCapacity);
+
     return 0;
 }
