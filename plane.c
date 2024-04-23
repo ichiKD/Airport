@@ -248,8 +248,19 @@ int main(){
         }
         printf("Message sent successfully\n");
         print_message(msg);
-
         
+        
+        sem_wait(ss);
+        sem_wait(ss);
+        if (msgrcv(msgid, &msgbuf, sizeof(struct Message), MESSAGE_TYPE, 0) == -1) {
+            perror("msgrcv");
+            exit(1);
+        }
+        struct Message received_msg;
+        memcpy(&received_msg, msgbuf.mtext, sizeof(struct Message));
+        print_message(received_msg);
+
+
         
         // if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
         //     perror("msgsnd");

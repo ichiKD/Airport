@@ -197,7 +197,19 @@ int main(){
                     ;
                 }
                 else if (received_msg.ARRIVAL_case == 2){
-                    ;
+                    struct Message msg = reply_to_plane(1);
+                    char plane_semaphore_name[30];  
+                    sprintf(plane_semaphore_name, "plane_semaphore_%d", received_msg.r.plane_id);
+                    sem_t *plane_semaphore = sem_open(plane_semaphore_name, 0);
+                    sem_post(plane_semaphore);
+                    memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
+                    if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
+                        perror("msgsnd");
+                        exit(1);
+                    }
+                    printf("Plane conformation message sent successfully\n");
+
+
                 }
                 else{
                     printf("404_3\n");

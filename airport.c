@@ -134,8 +134,12 @@ void * useRunways(void *args){
     int FOR_DEPARTURE            = threadArg->FOR_DEPARTURE;
     struct Plane r               = threadArg->plane;
 
-
-    busy[idx] = 1;
+    if(idx == runways){
+        back_up_BUSY = 1;
+    }
+    else{
+        busy[idx]    = 1;
+    }
     if(FOR_DEPARTURE == 1){
         sleep(3);
         printf("Plane %d has completed boarding/loading and taken off from Runway No. %d of Airport No. %d.\n",
@@ -184,7 +188,12 @@ void * useRunways(void *args){
         printf("Debording Message sent successfully\n");
 
     }
-    busy[idx] = 0;
+    if(idx == runways){
+        back_up_BUSY = 0;
+    }
+    else{
+        busy[idx]    = 0;
+    }
     pthread_exit(NULL);
 }
 
