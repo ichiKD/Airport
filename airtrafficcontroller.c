@@ -30,6 +30,51 @@ struct Plane{
 };
 
 
+struct Message{
+    int sender;
+    int CONFORMATION_plane;
+    int TERMINATION;
+    int FOR_DEPARTURE;
+    int DEPARTURE_case, ARRIVAL_case;
+    int CONFORMATION_boarding, CONFORMATION_takeoff; 
+    int CONFORMATION_landing, CONFORMATION_deboarded;
+    struct Plane r;
+};
+
+
+
+struct Message reply_to_plane(int CONFORMATION_plane){
+    struct Message currentMessage;
+    currentMessage.sender = 2;
+    currentMessage.CONFORMATION_plane = CONFORMATION_plane;
+    return currentMessage;
+}
+struct Message departure(struct Plane r){
+    struct Message currentMessage;
+    currentMessage.sender = 2;
+    currentMessage.FOR_DEPARTURE = 1;
+    currentMessage.r = r;
+    return currentMessage;
+}
+
+struct Message arrival(struct Plane r){
+    struct Message currentMessage;
+    currentMessage.sender = 2;
+    currentMessage.FOR_DEPARTURE = 0;
+    currentMessage.r = r;
+    return currentMessage;
+}
+
+struct Message termination(){
+    struct Message currentMessage;
+    currentMessage.sender = 2;
+    currentMessage.TERMINATION = 1;
+    return currentMessage;
+}
+
+
+
+
 int main(){
     int airports;
     printf("Enter the number of airports to be handled/managed: ");

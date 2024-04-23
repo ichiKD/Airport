@@ -29,6 +29,29 @@ struct Plane{
     int plane_type, passengers; 
 };
 
+struct Plane plane_data;
+
+struct Message{
+    int sender;
+    int CONFORMATION_plane;
+    int TERMINATION;
+    int FOR_DEPARTURE;
+    int DEPARTURE_case, ARRIVAL_case;
+    int CONFORMATION_boarding, CONFORMATION_takeoff; 
+    int CONFORMATION_landing, CONFORMATION_deboarded;
+    struct Plane r;
+};
+
+struct Message message_to_ATC(){
+    struct Message currentMessage;
+    currentMessage.sender = 1;
+    currentMessage.r = plane_data;
+    return currentMessage;
+}
+
+
+
+
 
 
 

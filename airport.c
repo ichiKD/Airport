@@ -43,6 +43,59 @@ struct ThreadArgs {
 };
 
 
+struct Message{
+    int sender;
+    int CONFORMATION_plane;
+    int TERMINATION;
+    int FOR_DEPARTURE;
+    int DEPARTURE_case, ARRIVAL_case;
+    int CONFORMATION_boarding, CONFORMATION_takeoff; 
+    int CONFORMATION_landing, CONFORMATION_deboarded;
+    struct Plane r;
+};
+
+
+struct Message boarding(struct Plane r){
+    struct Message currentMessage;
+    currentMessage.sender = 3;
+    currentMessage.FOR_DEPARTURE = 1;
+    currentMessage.DEPARTURE_case = 1;
+    currentMessage.CONFORMATION_boarding = 1;
+    currentMessage.r = r;
+    return currentMessage;
+}
+
+
+struct Message takeoff(struct Plane r){
+    struct Message currentMessage;
+    currentMessage.sender = 3;
+    currentMessage.FOR_DEPARTURE = 1;
+    currentMessage.DEPARTURE_case = 2;
+    currentMessage.CONFORMATION_takeoff = 1;
+    currentMessage.r = r;
+    return currentMessage;
+}
+
+struct Message landing(struct Plane r){
+    struct Message currentMessage;
+    currentMessage.sender = 3;
+    currentMessage.FOR_DEPARTURE = 0;
+    currentMessage.ARRIVAL_case = 1;
+    currentMessage.CONFORMATION_landing = 1;
+    currentMessage.r = r;
+    return currentMessage;
+}
+struct Message takeoff(struct Plane r){
+    struct Message currentMessage;
+    currentMessage.sender = 3;
+    currentMessage.FOR_DEPARTURE = 0;
+    currentMessage.ARRIVAL_case = 2;
+    currentMessage.CONFORMATION_deboarded = 1;
+    currentMessage.r = r;
+    return currentMessage;
+}
+
+
 
 
 void * useRunways(void *args){

@@ -40,67 +40,12 @@ struct Message{
     struct Plane r;
 };
 
-
-/*
-For plane to ATC
-Message.sender = 1;
-Message.r = plane_data;
-
-For ATC to plane
-Message.sender = 2;
-Message.CONFORMATION_plane = CONFORMATION_plane;
-
-For ATC to airport for departure
-Message.sender = 2;
-Message.FOR_DEPARTURE = 1;
-Message.r = r;
-
-For airport to ATC (When boarding: DEPARTURE_case = 1)
-Message.sender = 3;
-Message.FOR_DEPARTURE = 1;
-Message.DEPARTURE_case = 1;
-Message.CONFORMATION_boarding = CONFORMATION_boarding;
-Message.r = r;
-
-For airport to ATC (When takeoff: DEPARTURE_case = 2)
-Message.sender = 3;
-Message.FOR_DEPARTURE = 1;
-Message.DEPARTURE_case = 2;
-Message.CONFORMATION_takeoff = CONFORMATION_takeoff;
-Message.r = r;
-
-For ATC to airport for arrival
-Message.sender = 2;
-Message.FOR_DEPARTURE = 0;
-Message.r = r;
-
-
-For airport to ATC (When landing: ARRIVAL_case = 1)
-Message.sender = 3;
-Message.FOR_DEPARTURE = 0;
-Message.ARRIVAL_case = 1;
-Message.CONFORMATION_landing = CONFORMATION_landing;
-Message.r = r;
-
-For airport to ATC (When deboarded: ARRIVAL_case = 2)
-Message.sender = 3;
-Message.FOR_DEPARTURE = 0;
-Message.ARRIVAL_case = 2;
-Message.CONFORMATION_deboarded = CONFORMATION_deboarded;
-Message.r = r;
-
-For ATC to airport
-Message.sender = 2;
-Message.TERMINATION = TERMINATION;
-
-For cleanup to ATC
-Message.sender = 4;
-Message.TERMINATION = 1;
-
-
-
-
-*/
+struct Message clean(){
+    struct Message currentMessage;
+    currentMessage.sender = 4;
+    currentMessage.TERMINATION = 1;
+    return currentMessage;
+}
 
 
 
