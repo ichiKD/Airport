@@ -11,8 +11,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pthread.h>
+#include <string.h>
 
-
+#define MESSAGE_TYPE 1
 /*
 int message_sender:
 1 = plane
@@ -215,7 +216,6 @@ int main(){
         fflush(stdout);
 
 
-        struct Plane plane_data;
         plane_data.arrival_airport   = arrival_airport;
         plane_data.departure_airport = departure_airport;
         plane_data.plane_id          = plane_id;
@@ -237,35 +237,44 @@ int main(){
         }
         sem_t *semATC = sem_open("ATC", 0);
 
-
-
-
-
         sem_post(semATC);
-        if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+
+        struct Message msg = message_to_ATC();
+        msgbuf.mtype = MESSAGE_TYPE;
+        memcpy(msgbuf.mtext, &msg, sizeof(struct Message));    // Copy the struct Message into the message buffer
+        if (msgsnd(msgid, &msgbuf, sizeof(struct Message), IPC_NOWAIT) == -1) {
             perror("msgsnd");
-            exit(EXIT_FAILURE);
+            exit(1);
         }
-        sem_post(semATC);
-        if (msgsnd(msgid, &plane_data, sizeof(struct Plane), 0) == -1) {
-            perror("msgsnd");
-            exit(EXIT_FAILURE);
-        }
-        sem_wait(ss);
-        int conformation;
-        if (msgrcv(msgid, &conformation, sizeof(int), 0, 0) == -1) {
-            perror("msgrcv");
-            exit(EXIT_FAILURE);
-        }
-        if(conformation){
-            printf("Plane %d has successfully traveled from Airport %d to Airport %d!\n",
-                             plane_id, departure_airport, arrival_airport);
-            fflush(stdout);
-        }
-        else{
-            printf("Plain can not travel as cleanup happended already\n");
-            fflush(stdout);
-        }
+        printf("Message sent successfully\n");
+        print_message(msg);
+
+        
+        
+        // if (msgsnd(msgid, &message_sender_id, sizeof(int), 0) == -1) {
+        //     perror("msgsnd");
+        //     exit(EXIT_FAILURE);
+        // }
+        // sem_post(semATC);
+        // if (msgsnd(msgid, &plane_data, sizeof(struct Plane), 0) == -1) {
+        //     perror("msgsnd");
+        //     exit(EXIT_FAILURE);
+        // }
+        // sem_wait(ss);
+        // int conformation;
+        // if (msgrcv(msgid, &conformation, sizeof(int), 0, 0) == -1) {
+        //     perror("msgrcv");
+        //     exit(EXIT_FAILURE);
+        // }
+        // if(conformation){
+        //     printf("Plane %d has successfully traveled from Airport %d to Airport %d!\n",
+        //                      plane_id, departure_airport, arrival_airport);
+        //     fflush(stdout);
+        // }
+        // else{
+        //     printf("Plain can not travel as cleanup happended already\n");
+        //     fflush(stdout);
+        // }
     }
 
     return 0;
